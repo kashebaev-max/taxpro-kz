@@ -8,7 +8,10 @@
     "start": "next start"
   },
   "dependencies": {
+ vercel/react-server-components-cve-vu-zevvs2
     "next": "15.2.8",
+    "next": "15.3.1",
+main
     "react": "^19",
     "react-dom": "^19",
     "@supabase/supabase-js": "^2.49.1",
