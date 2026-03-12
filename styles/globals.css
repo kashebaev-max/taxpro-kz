@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #EFEDE8;
+  --surf: #FFFFFF;
+  --alt: #F7F5F1;
+  --brd: #E0DBCF;
+  --brdH: #C8C2B4;
+  --txt: #18170F;
+  --sub: #6A655A;
+  --muted: #A09880;
+  --blue: #1A4E86;
+  --blueLt: #E8F0FA;
+  --blueMd: #2C69B3;
+  --amber: #B86A00;
+  --amberLt: #FDF0DC;
+  --red: #A82828;
+  --redLt: #FAEAEA;
+  --grn: #1A6B3A;
+  --grnLt: #E5F5EC;
+  --ip: #0F5C8A;
+  --ipLt: #E5F2FA;
+  --teal: #0F6B5A;
+  --tealLt: #E5F5F1;
+  --sh: 0 1px 4px rgba(0,0,0,.07);
+  --shMd: 0 4px 16px rgba(0,0,0,.10);
+  --r: 8px;
+}
+
+html, body { height: 100%; font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif; background: var(--bg); color: var(--txt); }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: var(--brdH); border-radius: 3px; }
+
+input, select, button, textarea { font-family: inherit; }
+
+.mono { font-family: 'IBM Plex Mono', 'Courier New', monospace; }
+
+@media print {
+  .no-print { display: none !important; }
+  .sidebar { display: none !important; }
+}
