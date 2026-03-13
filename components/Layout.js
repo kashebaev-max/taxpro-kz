@@ -20,6 +20,7 @@ const NAV = [
   { id: 'rates', label: 'Базовые ставки', ico: '📊', href: '/rates' },
   { id: 'currency', label: 'Курсы валют', ico: '💱', href: '/currency' },
   { id: 'changes', label: 'НК РК 2026', ico: '⚡', href: '/changes', badge: true },
+  { id: 'admin', label: 'Администратор', ico: '🛡️', href: '/admin', adminOnly: true },
 ]
 
 export default function Layout({ children, active }) {
@@ -87,7 +88,7 @@ export default function Layout({ children, active }) {
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px', overflowY: 'auto' }}>
-          {NAV.map(item => (
+          {NAV.filter(item => !item.adminOnly || profile?.role === 'admin').map(item => (
             <button key={item.id}
               onClick={() => router.push(item.href)}
               style={{
