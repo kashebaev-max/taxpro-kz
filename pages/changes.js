@@ -1,60 +1,292 @@
-// pages/changes.js
+import { useState, useMemo } from 'react'
 import Layout from '../components/Layout'
+
+const C = {
+  surf:'#FFF', alt:'#F7F5F1', brd:'#E0DBCF', txt:'#18170F', sub:'#6A655A', muted:'#A09880',
+  blue:'#1A4E86', blueLt:'#E8F0FA', blueMd:'#2C69B3',
+  amber:'#B86A00', amberLt:'#FDF0DC',
+  grn:'#1A6B3A', grnLt:'#E5F5EC',
+  red:'#A82828', redLt:'#FAEAEA',
+  sh:'0 1px 4px rgba(0,0,0,.07)',
+}
+
+const NK = [
+  {
+    id:'izmeneniya2026', num:'🆕 Изменения', title:'Ключевые изменения НК РК 2026', badge:'Новое!', isNew:true,
+    articles:[
+      { num:'Закон №214-VIII', title:'НДС повышен с 12% до 16%', isNew:true,
+        text:'С 1 января 2025 года ставка НДС повышена с 12% до 16% (Закон РК от 12 декабря 2023 года №214-VIII). Порог обязательной регистрации по НДС — 20 000 МРП (86 500 000 ₸ в 2026 г.). Все ранее выданные счёт-фактуры со ставкой 12% недействительны.' },
+      { num:'МРП 2026', title:'МРП — 4 325 ₸, МЗП — 85 000 ₸', isNew:true,
+        text:'Месячный расчётный показатель (МРП) на 2026 год — 4 325 тенге. Минимальная заработная плата (МЗП) — 85 000 тенге. Все пороговые значения, штрафы и льготы пересчитываются от нового МРП.' },
+      { num:'ОПВР 2026', title:'ОПВР работодателя — 3.5%', isNew:true,
+        text:'Обязательные пенсионные взносы работодателя (ОПВР) в 2026 году — 3.5% от дохода работника. Введены поэтапно с 2024 года. Максимальный объект исчисления — 50 МЗП (4 250 000 ₸/мес.).' },
+      { num:'ЭСФ 2025', title:'Обязательная электронная счёт-фактура', isNew:true,
+        text:'С 2025 года все плательщики НДС выставляют счёт-фактуры исключительно в электронном виде через ИС ЭСФ (esf.gov.kz). Бумажные СФ к зачёту по НДС не принимаются.' },
+      { num:'УНР 2026', title:'Лимиты УНР на 2026 год', isNew:true,
+        text:'Для применения УНР (Форма 910): доход за полугодие — не более 24 038 МРП (≈103.9 млн ₸); численность — не более 30 чел. Для патента — доход не более 3 528 МРП в год (≈15.3 млн ₸).' },
+      { num:'ВС 2025', title:'Виртуальный склад для торговли', isNew:true,
+        text:'С 2025 года субъекты торговли при обороте свыше 500 МРП в квартал обязаны отражать товарные остатки в системе виртуального склада (ИС ВС). Система интегрирована с ЭСФ и ККМ.' },
+    ]
+  },
+  {
+    id:'obshchaya', num:'Раздел 1', title:'Общие положения',
+    articles:[
+      { num:'1', title:'Отношения, регулируемые Налоговым кодексом',
+        text:'Налоговый кодекс регулирует властные отношения по установлению, введению, изменению, отмене налогов и других обязательных платежей в бюджет, а также отношения, связанные с исполнением налогового обязательства.' },
+      { num:'2', title:'Налоговое законодательство РК',
+        text:'Налоговое законодательство РК основывается на Конституции РК и состоит из Налогового кодекса и нормативных правовых актов, принятие которых предусмотрено настоящим Кодексом. Международные договоры имеют приоритет над НК РК.' },
+      { num:'4', title:'Принципы налогообложения',
+        text:'Налогообложение в РК основано на принципах: обязательности; определённости (чёткость норм); справедливости (равные условия); единства налоговой системы; гласности налогового законодательства.' },
+      { num:'7', title:'Обязанности налогоплательщика',
+        text:'Налогоплательщик обязан: своевременно исполнять налоговое обязательство; вести налоговый учёт; составлять и представлять отчётность; выполнять законные требования налоговых органов; не препятствовать проверкам.' },
+      { num:'8', title:'Права налогоплательщика',
+        text:'Налогоплательщик вправе: получать информацию от налоговых органов; применять налоговые льготы; получать отсрочку уплаты налогов; присутствовать при проверках; обжаловать решения налоговых органов в суде.' },
+    ]
+  },
+  {
+    id:'ipn', num:'Раздел 4', title:'Индивидуальный подоходный налог (ИПН)', badge:'10%',
+    articles:[
+      { num:'155', title:'Плательщики ИПН',
+        text:'Плательщики ИПН — физические лица. Резиденты уплачивают ИПН с доходов из всех источников. Нерезиденты — только с доходов из источников в РК.' },
+      { num:'158', title:'Ставки ИПН',
+        text:'Ставка ИПН — 10% от дохода. Дивиденды при владении более 3 лет — 5%. Доходы нерезидентов у источника выплаты — 15%. ИПН с зарплаты удерживается работодателем ежемесячно.' },
+      { num:'163', title:'Стандартные налоговые вычеты',
+        text:'Вычеты для работников: 1 МЗП/мес. (85 000 ₸) при доходе до 25 МРП (108 125 ₸); 882 МРП для инвалидов I/II группы и участников ВОВ; 882 МРП для родителя ребёнка-инвалида.' },
+      { num:'166', title:'Вычет по ОПВ и ВОСМС',
+        text:'При исчислении ИПН вычитаются: ОПВ 10% от дохода; ВОСМС 2% от дохода. Таким образом, ИПН исчисляется от дохода за минусом ОПВ, ВОСМС и стандартных вычетов.' },
+      { num:'200', title:'Форма 200 — декларация по ИПН и СН',
+        text:'Налоговые агенты (работодатели) представляют декларацию по ИПН и социальному налогу (Форма 200.00) ежеквартально до 15-го числа второго месяца после отчётного квартала.' },
+    ]
+  },
+  {
+    id:'kpn', num:'Раздел 5', title:'Корпоративный подоходный налог (КПН)', badge:'20%',
+    articles:[
+      { num:'288', title:'Плательщики КПН',
+        text:'Плательщики КПН — юридические лица-резиденты РК, за исключением государственных учреждений. Нерезиденты платят КПН с доходов из источников в РК.' },
+      { num:'290', title:'Ставки КПН',
+        text:'Основная ставка КПН — 20%. Для сельхозпроизводителей — 10%. Для резидентов СЭЗ — 0%. Для организаций, осуществляющих деятельность в сфере образования и медицины, — 0% при соблюдении условий.' },
+      { num:'299', title:'Совокупный годовой доход (СГД)',
+        text:'СГД включает: доход от реализации товаров, работ, услуг; доход от прироста стоимости; дивиденды, вознаграждения, роялти; доход от списания обязательств; безвозмездно полученное имущество; прочие доходы.' },
+      { num:'300', title:'Вычеты при КПН',
+        text:'Вычитаются расходы, связанные с деятельностью: себестоимость; расходы на оплату труда; амортизация; вознаграждения по займам; уплаченные налоги (кроме КПН); расходы на НИОКР; представительские расходы (до 1% от СГД).' },
+      { num:'100', title:'Форма 100 — декларация по КПН',
+        text:'Декларация по КПН (Форма 100.00) представляется ежегодно до 31 марта года, следующего за отчётным. Авансовые платежи уплачиваются ежемесячно. Окончательный расчёт — до 10 апреля.' },
+    ]
+  },
+  {
+    id:'nds', num:'Раздел 8', title:'Налог на добавленную стоимость (НДС)', badge:'16%',
+    articles:[
+      { num:'367', title:'Плательщики НДС',
+        text:'Обязательная постановка на учёт по НДС при превышении оборота 20 000 МРП (86 500 000 ₸ в 2026 г.) за календарный год. Добровольная постановка возможна при любом обороте.' },
+      { num:'369', title:'Ставка НДС — 16%',
+        text:'С 1 января 2025 года ставка НДС — 16% (Закон №214-VIII). Нулевая ставка: экспорт товаров; международные перевозки; поставки в СЭЗ; реализация аффинированных драгметаллов Нацбанку.' },
+      { num:'370', title:'Обороты, освобождённые от НДС',
+        text:'От НДС освобождены: финансовые услуги; медуслуги и лекарства; образовательные услуги государственных учреждений; услуги ЖКХ; земельные участки; ритуальные услуги; взносы в уставный капитал.' },
+      { num:'400', title:'НДС к зачёту',
+        text:'НДС к зачёту — суммы НДС по приобретённым товарам, работам, услугам для облагаемого оборота при наличии ЭСФ в ИС ЭСФ. НДС к уплате = НДС начисленный − НДС к зачёту.' },
+      { num:'424', title:'Форма 300 — декларация по НДС',
+        text:'Декларация по НДС (Форма 300.00) представляется ежеквартально до 15-го числа второго месяца после квартала. Уплата НДС — до 25-го числа второго месяца после отчётного квартала.' },
+    ]
+  },
+  {
+    id:'unr', num:'Раздел 9', title:'Специальные налоговые режимы', badge:'УНР 4%',
+    articles:[
+      { num:'683', title:'Упрощённая декларация (УНР) — общие положения',
+        text:'УНР применяется субъектами малого бизнеса. Освобождает от ИПН/КПН и социального налога. Условия: доход за полугодие ≤ 24 038 МРП; численность ≤ 30 чел. Применяют ИП и ТОО без НДС.' },
+      { num:'683-2', title:'Ставка УНР — 4%',
+        text:'Ставка единого налога по УНР — 4% от дохода. Из суммы: ½ = ИПН/КПН, ½ = социальный налог. Дополнительно: ОПВ 10%, ОПВР 3.5%, ВОСМС 2%, СО 3.5% с фонда оплаты труда.' },
+      { num:'910', title:'Форма 910 — сроки',
+        text:'Декларация по УНР (Форма 910.00) — полугодовая: 1-е полугодие — до 15 августа; 2-е полугодие — до 15 февраля. Уплата — в те же сроки. Нулевая отчётность обязательна.' },
+      { num:'684', title:'Патент для ИП',
+        text:'ИП без наёмных работников вправе применять патент. Ставка — 1% от дохода. Приобретается авансом на 1–12 месяцев. Лимит дохода — 3 528 МРП/год (≈15.3 млн ₸ в 2026 г.).' },
+      { num:'696', title:'Розничный налог (Форма 912)',
+        text:'Режим для торговли, общепита, услуг. Ставка — 4% (в Алматы, Астане, Шымкенте — 6%) от дохода без НДС. Форма 912.00 — полугодовая. Не вправе применять при превышении лимита выручки.' },
+    ]
+  },
+  {
+    id:'soc', num:'Раздел 10', title:'Социальные платежи', badge:'ОПВ 10% · СО 3.5%',
+    articles:[
+      { num:'ОПВ', title:'Обязательные пенсионные взносы (ОПВ) — 10%',
+        text:'ОПВ: работник — 10% от дохода (max 50 МЗП = 4 250 000 ₸/мес.). Работодатель удерживает и перечисляет в ЕНПФ. ОПВ уменьшают ИПН (принимаются к вычету). Срок уплаты — до 25-го числа следующего месяца.' },
+      { num:'ОПВР', title:'ОПВ работодателя (ОПВР) — 3.5%',
+        text:'ОПВР в 2026 году — 3.5% от дохода работника за счёт работодателя. Максимальный объект — 50 МЗП. Уплачивается вместе с ОПВ работника до 25-го числа следующего месяца.' },
+      { num:'ВОСМС', title:'Взносы на ОСМС — 2% (работник) + 3% (работодатель)',
+        text:'ВОСМС работника — 2% от дохода (max 10 МЗП = 850 000 ₸/мес.). Отчисления работодателя — 3% от дохода работника. ИП на УНР — 5% от 1.4 МЗП ежемесячно (5 950 ₸ в 2026 г.).' },
+      { num:'СО', title:'Социальные отчисления (СО) — 3.5%',
+        text:'СО работодателя — 3.5% от дохода работника (max 7 МЗП = 595 000 ₸/мес.). Уплачиваются в ГФСС. ИП — СО с дохода, но не менее 1 МЗП/мес. СО уменьшают социальный налог.' },
+      { num:'СН', title:'Социальный налог (для ОУР) — 9.5%',
+        text:'Социальный налог на ОУР — 9.5% от ФОТ. Объект — выплаты работникам. Сумма СН уменьшается на СО. При отрицательной разнице СН = 0. Декларация — Форма 200.00, ежеквартально.' },
+    ]
+  },
+  {
+    id:'imushestvo', num:'Раздел 11', title:'Имущественные налоги',
+    articles:[
+      { num:'515', title:'Налог на имущество юрлиц — 1.5%',
+        text:'Ставка — 1.5%/год от среднегодовой балансовой стоимости. Декларация (Форма 700.00) — ежегодно до 31 марта. Авансовые платежи — ежеквартально до 25-го числа второго месяца.' },
+      { num:'528', title:'Налог на имущество физлиц',
+        text:'Прогрессивные ставки: до 2 млн ₸ — 0.05%; 2–4 млн — 0.08%; 4–6 млн — 0.1%; свыше 120 млн — 0.5%. Уведомления рассылает налоговый орган. Срок уплаты — до 1 октября.' },
+      { num:'490', title:'Земельный налог',
+        text:'Уплачивают собственники и постоянные землепользователи. Ставки дифференцированы по категориям земель и населённым пунктам. Декларация (Форма 700.00) — ежегодно до 31 марта.' },
+      { num:'Транспорт', title:'Налог на транспорт',
+        text:'Ставки в МРП зависят от объёма двигателя (авто) или грузоподъёмности. Пример: легковое авто до 1 000 см³ — 1 МРП/год. Срок уплаты — до 1 апреля. Декларация для юрлиц — Форма 700.00.' },
+    ]
+  },
+  {
+    id:'nalog_uchet', num:'Раздел 13', title:'Налоговый учёт и отчётность',
+    articles:[
+      { num:'206', title:'Налоговая отчётность',
+        text:'Налоговая отчётность включает декларации, расчёты и приложения к ним. Представляется в электронном виде через Кабинет налогоплательщика (cabinet.salyk.kz) или e-Salyq Business.' },
+      { num:'209', title:'Сроки представления деклараций',
+        text:'КПН (Форма 100) — до 31 марта; НДС (Форма 300) — до 15-го числа 2-го месяца после квартала; ИПН/СН (Форма 200) — до 15-го числа 2-го месяца после квартала; УНР (Форма 910) — до 15 августа и 15 февраля.' },
+      { num:'190', title:'Налоговый учёт',
+        text:'Налоговый учёт ведётся на основе бухгалтерского учёта с корректировками согласно НК РК. Налогоплательщики с разными режимами налогообложения ведут раздельный учёт.' },
+    ]
+  },
+  {
+    id:'proverki', num:'Раздел 14', title:'Налоговый контроль',
+    articles:[
+      { num:'143', title:'Виды налоговых проверок',
+        text:'Виды проверок: комплексная (все налоги, до 30 раб. дней); тематическая (отдельные виды налогов); встречная (по контрагенту); хронометражное обследование. Назначаются на основании предписания.' },
+      { num:'607', title:'Камеральный контроль',
+        text:'Камеральный контроль — анализ отчётности без выезда к налогоплательщику. При выявлении нарушений направляется уведомление об устранении. Срок ответа налогоплательщика — 30 рабочих дней.' },
+      { num:'275', title:'Пеня за просрочку',
+        text:'Пеня за каждый день просрочки — 1.25-кратная ставка рефинансирования НБ РК (в 2026 г. — базовая ставка 14.25%). Расчёт: 14.25% × 1.25 / 365 = ≈0.0488% в день от суммы недоимки.' },
+    ]
+  },
+  {
+    id:'shtraf', num:'Раздел 15', title:'Ответственность за нарушения',
+    articles:[
+      { num:'КоАП 209', title:'Административные штрафы',
+        text:'Штрафы по КоАП: непредставление отчётности — от 15 до 50 МРП; занижение налоговой базы — 50% от суммы занижения; препятствие проверке — 100–200 МРП; нарушение порядка применения ККМ — от 20 МРП.' },
+      { num:'УК 245', title:'Уголовная ответственность',
+        text:'Уклонение от уплаты налогов в крупном размере (свыше 2 000 МРП = 8 650 000 ₸) — штраф до 3 000 МРП или лишение свободы до 3 лет. В особо крупном размере (свыше 20 000 МРП) — до 6 лет.' },
+      { num:'Обжалование', title:'Обжалование действий налоговых органов',
+        text:'Налогоплательщик вправе обжаловать: результаты проверки — в вышестоящий орган в течение 30 рабочих дней; уведомление о начислении налогов — в КГД МФ РК; в суд — в общем порядке.' },
+    ]
+  },
+]
+
+function highlight(text, query) {
+  if (!query || !query.trim()) return text
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
+  return parts.map((p, i) =>
+    p.toLowerCase() === query.toLowerCase()
+      ? <mark key={i} style={{ background:'#FFE066', borderRadius:2, padding:'0 1px' }}>{p}</mark>
+      : p
+  )
+}
+
 export default function Changes() {
-  const C = { surf:'#FFF', brd:'#E0DBCF', txt:'#18170F', sub:'#6A655A', muted:'#A09880',
-    blue:'#1A4E86', blueLt:'#E8F0FA', amber:'#B86A00', amberLt:'#FDF0DC',
-    red:'#A82828', redLt:'#FAEAEA', grn:'#1A6B3A', grnLt:'#E5F5EC', sh:'0 1px 4px rgba(0,0,0,.07)' }
-  const changes = [
-    { cat:'НДС', ico:'🔴', color:C.red, lt:C.redLt, items:[
-      { name:'Ставка НДС', was:'12%', now:'16%', up:true },
-      { name:'Порог регистрации', was:'20 000 МРП', now:'10 000 МРП', up:false, note:'≈43.25 млн ₸' },
-    ]},
-    { cat:'УНР', ico:'🟡', color:C.amber, lt:C.amberLt, items:[
-      { name:'Ставка УНР', was:'3%', now:'4%', up:true, note:'региональная 2–6%' },
-      { name:'Лимит оборота', was:'24 038 МРП', now:'600 000 МРП', up:true, note:'расширен' },
-    ]},
-    { cat:'ИПН', ico:'🟠', color:'#9B4A00', lt:'#FEF3E7', items:[
-      { name:'Ставка ИПН', was:'10% (плоская)', now:'10% / 15%', up:true, note:'прогрессивная' },
-      { name:'Порог ставки 15%', was:'—', now:'8 500 МРП/год', up:false },
-      { name:'Стандартный вычет', was:'14 МРП/мес', now:'30 МРП/мес', up:true, note:'выгодно для работников' },
-    ]},
-    { cat:'Соц. платежи', ico:'🟢', color:C.grn, lt:C.grnLt, items:[
-      { name:'ОПВР (работодатель)', was:'2.5%', now:'3.5%', up:true },
-      { name:'Социальный налог', was:'11%−СО', now:'6%', up:false, note:'упрощён' },
-    ]},
-    { cat:'КПН', ico:'🔵', color:C.blue, lt:C.blueLt, items:[
-      { name:'КПН базовая', was:'20%', now:'20%', up:null },
-      { name:'КПН банки', was:'20%', now:'25%', up:true },
-      { name:'КПН соц. сфера', was:'0%', now:'5%', up:true, note:'с 2027 — 10%' },
-    ]},
-    { cat:'Основные величины', ico:'📌', color:'#5B2A88', lt:'#F3EEF9', items:[
-      { name:'МРП', was:'3 932 ₸', now:'4 325 ₸', up:true },
-      { name:'МЗП', was:'85 000 ₸', now:'85 000 ₸', up:null },
-    ]},
-  ]
+  const [search, setSearch] = useState('')
+  const [openSection, setOpenSection] = useState('izmeneniya2026')
+  const [openArticle, setOpenArticle] = useState(null)
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return NK
+    const q = search.toLowerCase()
+    return NK.map(s => ({
+      ...s,
+      articles: s.articles.filter(a =>
+        a.title.toLowerCase().includes(q) ||
+        a.text.toLowerCase().includes(q) ||
+        a.num.toLowerCase().includes(q)
+      )
+    })).filter(s => s.articles.length > 0)
+  }, [search])
+
+  const totalFound = filtered.reduce((s, r) => s + r.articles.length, 0)
+  const displaySections = search ? filtered : filtered.filter(s => s.id === openSection)
+
   return (
     <Layout active="changes">
-      <div style={{ background:'linear-gradient(135deg,#1A4E86,#0D3060)', borderRadius:10, padding:'16px 22px', marginBottom:20, color:'#fff' }}>
-        <div style={{ fontWeight:800, fontSize:17, marginBottom:3 }}>⚡ Изменения налогового законодательства 2026</div>
-        <div style={{ fontSize:12, opacity:.85 }}>Закон РК №214-VIII от 18.07.2025 · Вступил в силу 01.01.2026</div>
-      </div>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))', gap:14 }}>
-        {changes.map((g,gi) => (
-          <div key={gi} style={{ background:C.surf, border:`1px solid ${C.brd}`, borderRadius:10, overflow:'hidden', boxShadow:C.sh }}>
-            <div style={{ background:g.color, color:'#fff', padding:'10px 16px', fontWeight:700, fontSize:13 }}>{g.ico} {g.cat}</div>
-            {g.items.map((item,i) => (
-              <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 90px 90px 20px', alignItems:'center', padding:'9px 14px', borderBottom:i<g.items.length-1?`1px solid ${C.brd}`:'none', background:item.up===true?g.lt:item.up===false?C.grnLt:'transparent' }}>
-                <div>
-                  <div style={{ fontSize:12, fontWeight:500 }}>{item.name}</div>
-                  {item.note && <div style={{ fontSize:10, color:C.muted }}>{item.note}</div>}
-                </div>
-                <div style={{ fontSize:11, color:C.sub, textDecoration:'line-through', textAlign:'center' }}>{item.was}</div>
-                <div style={{ fontSize:12, fontWeight:700, color:g.color, fontFamily:'monospace', textAlign:'center' }}>{item.now}</div>
-                <div style={{ textAlign:'center', fontSize:14 }}>{item.up===true?'↑':item.up===false?'↓':'='}</div>
-              </div>
-            ))}
+      {/* Header */}
+      <div style={{ background:'linear-gradient(135deg,#1A4E86,#0D3060)', borderRadius:10, padding:'16px 22px', marginBottom:16, color:'#fff' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+          <div>
+            <div style={{ fontWeight:800, fontSize:18, marginBottom:3 }}>⚡ Налоговый кодекс Республики Казахстан</div>
+            <div style={{ fontSize:12, opacity:.85 }}>Редакция 2026 · Закон №214-VIII · НДС 16% · МРП 4 325 ₸ · МЗП 85 000 ₸</div>
           </div>
-        ))}
+          <div style={{ fontSize:11, opacity:.8, textAlign:'right' }}>
+            <div>{NK.length} разделов</div>
+            <div>{NK.reduce((s,r)=>s+r.articles.length,0)} статей</div>
+          </div>
+        </div>
+        <div style={{ position:'relative' }}>
+          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', fontSize:16, pointerEvents:'none' }}>🔍</span>
+          <input value={search} onChange={e => { setSearch(e.target.value); if(e.target.value) setOpenSection(null) }}
+            placeholder="Поиск по НК РК — статьи, ставки, сроки, понятия..."
+            style={{ width:'100%', padding:'10px 36px 10px 38px', borderRadius:8, border:'none', fontSize:14, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} />
+          {search && <button onClick={()=>setSearch('')} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:18, color:'#999' }}>✕</button>}
+        </div>
+        {search && <div style={{ marginTop:8, fontSize:12, opacity:.85 }}>Найдено: {totalFound} статей в {filtered.length} разделах</div>}
+      </div>
+
+      <div style={{ display:'grid', gridTemplateColumns:'230px 1fr', gap:14, alignItems:'start' }}>
+        {/* Sidebar */}
+        <div style={{ background:C.surf, border:`1px solid ${C.brd}`, borderRadius:10, overflow:'hidden', boxShadow:C.sh, position:'sticky', top:16 }}>
+          <div style={{ padding:'9px 14px', background:C.alt, borderBottom:`1px solid ${C.brd}`, fontSize:10, fontWeight:700, color:C.muted, letterSpacing:'.04em' }}>РАЗДЕЛЫ НК РК 2026</div>
+          {NK.map(s => (
+            <button key={s.id} onClick={() => { setOpenSection(s.id === openSection ? null : s.id); setSearch('') }}
+              style={{ width:'100%', textAlign:'left', padding:'9px 12px', background:openSection===s.id&&!search?C.blueLt:'none', border:'none', borderBottom:`1px solid ${C.brd}`, cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', gap:6 }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:9, color:s.isNew?C.grn:C.muted, fontWeight:700, marginBottom:1 }}>{s.num}</div>
+                <div style={{ fontSize:11.5, fontWeight:openSection===s.id?700:400, color:openSection===s.id&&!search?C.blue:C.txt, lineHeight:1.3 }}>{s.title}</div>
+              </div>
+              {s.badge && <span style={{ fontSize:9, background:s.isNew?C.grnLt:C.blueLt, color:s.isNew?C.grn:C.blue, padding:'2px 5px', borderRadius:3, fontWeight:700, flexShrink:0 }}>{s.badge}</span>}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div>
+          {displaySections.length === 0 && search && (
+            <div style={{ background:C.surf, border:`1px solid ${C.brd}`, borderRadius:10, padding:40, textAlign:'center', color:C.muted }}>
+              <div style={{ fontSize:32, marginBottom:10 }}>🔍</div>
+              <div style={{ fontWeight:600, color:C.txt }}>Ничего не найдено по запросу «{search}»</div>
+              <div style={{ fontSize:13, marginTop:6 }}>Попробуйте другой запрос или выберите раздел слева</div>
+            </div>
+          )}
+
+          {!search && !openSection && (
+            <div style={{ background:C.surf, border:`1px solid ${C.brd}`, borderRadius:10, padding:40, textAlign:'center', color:C.muted }}>
+              <div style={{ fontSize:32, marginBottom:8 }}>📖</div>
+              <div style={{ fontWeight:600, color:C.txt }}>Выберите раздел НК РК слева</div>
+              <div style={{ fontSize:13, marginTop:6 }}>или воспользуйтесь поиском выше</div>
+            </div>
+          )}
+
+          {displaySections.map(section => (
+            <div key={section.id} style={{ marginBottom:14 }}>
+              <div style={{ background: section.isNew?'linear-gradient(135deg,#1A6B3A,#0D4025)':'linear-gradient(135deg,#1A4E86,#0D3060)', borderRadius:10, padding:'12px 18px', marginBottom:8, color:'#fff', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <div>
+                  <div style={{ fontSize:10, opacity:.8, marginBottom:2 }}>{section.num}</div>
+                  <div style={{ fontWeight:700, fontSize:15 }}>{section.title}</div>
+                </div>
+                <div style={{ fontSize:11, opacity:.8 }}>{section.articles.length} статей</div>
+              </div>
+              {section.articles.map(art => (
+                <div key={art.num} style={{ background:C.surf, border:`1px solid ${art.isNew?C.grn+'50':C.brd}`, borderRadius:8, marginBottom:6, overflow:'hidden', boxShadow:C.sh }}>
+                  <button onClick={() => setOpenArticle(openArticle===`${section.id}-${art.num}`?null:`${section.id}-${art.num}`)}
+                    style={{ width:'100%', textAlign:'left', padding:'11px 16px', background:'none', border:'none', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10, flex:1, minWidth:0 }}>
+                      <span style={{ background:art.isNew?C.grnLt:C.blueLt, color:art.isNew?C.grn:C.blue, fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:4, flexShrink:0 }}>
+                        {art.isNew?'🆕':''} {art.num}
+                      </span>
+                      <span style={{ fontWeight:600, fontSize:13 }}>{highlight(art.title, search)}</span>
+                    </div>
+                    <span style={{ color:C.muted, fontSize:14, flexShrink:0 }}>{openArticle===`${section.id}-${art.num}`?'▲':'▼'}</span>
+                  </button>
+                  {openArticle===`${section.id}-${art.num}` && (
+                    <div style={{ padding:'12px 16px', borderTop:`1px solid ${C.brd}`, background:art.isNew?'#F0FAF5':C.alt, fontSize:13, lineHeight:1.75, color:C.txt }}>
+                      {highlight(art.text, search)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </Layout>
   )
