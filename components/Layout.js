@@ -20,6 +20,7 @@ const NAV = [
   { id: 'rates', label: 'Базовые ставки', ico: '📊', href: '/rates' },
   { id: 'currency', label: 'Курсы валют', ico: '💱', href: '/currency' },
   { id: 'changes', label: 'НК РК 2026', ico: '⚡', href: '/changes', badge: true },
+  { id: 'consultant', label: 'AI Консультант', ico: '👩‍💼', href: '/consultant' },
   { id: 'admin', label: 'Администратор', ico: '🛡️', href: '/admin', adminOnly: true },
 ]
 
