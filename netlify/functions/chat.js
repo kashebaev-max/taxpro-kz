@@ -21,7 +21,7 @@ exports.handler = async function(event) {
 
   try {
     const body = JSON.parse(event.body)
-    body.model = 'claude-3-5-sonnet-20241022'
+    body.model = 'claude-haiku-4-5-20251001'
     body.max_tokens = 1000
 
     console.log('Calling Anthropic API...')
