@@ -67,7 +67,7 @@ export default function Layout({ children, active }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
             <div style={{ width: 36, height: 36, background: C.blue, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>ТП</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 14, color: C.txt }}>TaxPro KZ</div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: C.txt }}>Finstat.kz</div>
               <div style={{ fontSize: 9, color: C.muted, letterSpacing: '.04em', textTransform: 'uppercase' }}>НК РК 2026</div>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function Layout({ children, active }) {
         <header className="no-print" style={{ background: C.surf, borderBottom: `1px solid ${C.brd}`, padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 4px rgba(0,0,0,.05)' }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, color: C.txt }}>
-              {NAV.find(n => n.id === active)?.ico} {NAV.find(n => n.id === active)?.label || 'TaxPro KZ'}
+              {NAV.find(n => n.id === active)?.ico} {NAV.find(n => n.id === active)?.label || 'Finstat.kz'}
             </div>
             <div style={{ fontSize: 11, color: C.muted }}>
               КГД МФ РК · НК РК 2026 · {new Date().toLocaleDateString('ru-KZ', { day: '2-digit', month: 'long', year: 'numeric' })}
