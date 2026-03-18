@@ -16,14 +16,15 @@ exports.handler = async function(event) {
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'API key not configured' }) }
-  }
+  console.log('API key exists:', !!apiKey)
+  console.log('API key prefix:', apiKey ? apiKey.substring(0, 15) : 'NONE')
 
   try {
     const body = JSON.parse(event.body)
-    // Use stable model name
     body.model = 'claude-3-5-sonnet-20241022'
+    body.max_tokens = 1000
+
+    console.log('Calling Anthropic API...')
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -35,10 +36,12 @@ exports.handler = async function(event) {
       body: JSON.stringify(body)
     })
 
+    console.log('Response status:', response.status)
     const data = await response.json()
+    console.log('Response data:', JSON.stringify(data).substring(0, 200))
 
     return {
-      statusCode: response.status,
+      statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -46,6 +49,7 @@ exports.handler = async function(event) {
       body: JSON.stringify(data)
     }
   } catch (err) {
+    console.log('Error:', err.message)
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
